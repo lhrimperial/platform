@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Vue+ElementUI使用demo</title>
+    <!-- 引入样式 -->
+	<link rel="stylesheet" href="../webjars/element-ui/index.css">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+<div id="tableView" class="wrapper">
+    <naver></naver>
+    <div style="width: 80%;float: right;margin-top: 20px;">
+        <!--列表顶部搜索和工具条-->
+        <el-row>
+            <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+                <el-form-item label="批次号">
+                    <el-input v-model="searchForm.batchId" placeholder="批次号"></el-input>
+                </el-form-item>
+                <el-form-item label="产品ID">
+                    <el-input v-model="searchForm.productId" placeholder="产品ID"></el-input>
+                </el-form-item>
+                <el-form-item label="产品名称">
+                    <el-input v-model="searchForm.productName" placeholder="产品名称"></el-input>
+                </el-form-item>
+                <el-form-item label="商品ID">
+                    <el-input v-model="searchForm.goodsId" placeholder="商品ID"></el-input>
+                </el-form-item>
+                <el-form-item label="商品名称">
+                    <el-input v-model="searchForm.goodsName" placeholder="商品名称"></el-input>
+                </el-form-item>
+                <el-form-item label="批次状态">
+                    <el-select v-model="searchForm.batchStatus" placeholder="批次状态">
+                        <el-option label="--全部--" value=""></el-option>
+                        <el-option v-for="(item,index) in batchStatus" :label="item.name" :value="item.key" :key="item.key"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="创建时间" style="">
+                    <div class="block">
+                        <el-date-picker
+                                v-model="createTimeArr"
+                                type="datetimerange"
+                                align="right"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                                :default-time="['00:00:00', '23:59:59']">
+                        </el-date-picker>
+                    </div>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" icon="search" @click="searchClick">查询</el-button>
+                    <el-button type="success" icon="plus" @click="addClick">新增</el-button>
+                    <el-button type="danger" icon="delete"  @click="removeSelection">删除所选</el-button>
+                </el-form-item>
+            </el-form>
+        </el-row>
+        <!--列表-->
+        <el-row>
+            <el-table
+                    :data="tableData"
+                    v-loading.body="loading"
+                    border
+                    @selection-change="selectionChange"
+                    style="width: 100%">
+                <el-table-column
+                        type="selection"
+                        width="55">
+                </el-table-column>
+                <el-table-column
+                        prop="id"
+                        label="批次号"
+                        width="150">
+                </el-table-column>
+                <el-table-column
+                        prop="productId"
+                        label="产品ID"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="productName"
+                        label="产品名称"
+                        width="200">
+                </el-table-column>
+                <el-table-column
+                        prop="goodsId"
+                        label="商品ID"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="goodsName"
+                        label="商品名称"
+                        width="200">
+                </el-table-column>
+                <el-table-column
+                        prop="visitDate"
+                        label="预订日期"
+                        width="120">
+                    <template slot-scope="scope">
+                        {{scope.row.visitDate | formatDate}}
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="tradePrice"
+                        label="商品价格"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="quantity"
+                        label="预计下单份数"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="payType"
+                        label="支付方式"
+                        width="120">
+                </el-table-column>
+                <el-table-column
+                        prop="runStatus"
+                        label="任务状态"
+                        width="120" show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <p>{{scope.row.runStatus | formatRunStatus}}</p>
+                        <p>{{scope.row.runInfo}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="createTime"
+                        label="批次创建时间"
+                        width="120">
+                    <template slot-scope="scope">
+                        {{scope.row.createTime | formatTime}}
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="modifyTime"
+                        label="批次完成时间"
+                        width="120">
+                    <template slot-scope="scope">
+                        {{scope.row.modifyTime | formatTime}}
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        label="操作">
+                    <template scope="scope">
+                        <el-button :plain="true" type="success" size="small" icon="edit" @click="editClick(scope.row)">编辑</el-button>
+                        <el-button :plain="true" type="danger" size="small" icon="delete" @click="deleteClick(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-row>
+
+        <!--列表底部工具条和分页符-->
+        <el-row style="margin-top: 20px" type="flex" justify="end">
+            <el-col :span="18" >
+                <el-pagination
+                        @size-change="pageSizeChange"
+                        @current-change="currentPageChange"
+                        :current-page="currentPage"
+                        :page-sizes="[10, 20, 30, 50]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="totalCount">
+                </el-pagination>
+            </el-col>
+        </el-row>
+
+        <!--编辑界面-->
+        <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" :before-close="handleClose">
+            <el-form :model="editForm" :inline="true" label-width="80px" :rules="editFormRules" ref="editForm">
+                <el-form-item label="产品ID" prop="productId">
+                    <el-input v-model="editForm.productId" ></el-input>
+                </el-form-item>
+                <el-form-item label="产品名称" prop="productName">
+                    <el-input v-model="editForm.productName" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="商品ID" prop="goodsId">
+                    <el-input v-model="editForm.goodsId" ></el-input>
+                </el-form-item>
+                <el-form-item label="商品名称" prop="goodsName">
+                    <el-input v-model="editForm.goodsName" auto-complete="off"></el-input>
+                </el-form-item>
+
+                <el-form-item label="预定日期">
+                    <el-date-picker type="date" placeholder="选择日期" v-model="editForm.visitDate"></el-date-picker>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click.native="dialogVisible = false">取消</el-button>
+                <el-button type="primary" @click.native="editSubmit">提交</el-button>
+            </div>
+        </el-dialog>
+    </div>
+ 
+</div>
+ 
+ <!-- 先引入 Vue -->
+  <script src="../webjars/vue/vue.min.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../webjars/element-ui/index.js"></script>
+  <script src="../webjars/axios/axios.min.js"></script>
+  <script src="../webjars/tool/index.js"></script>
+<script src="/scripts/nav.js"></script>
+ 
+<script type="text/javascript">
+    var tableView = new Vue({
+        el: '#tableView',
+        data: {
+            //显示加载中样式
+            loading: false,
+            createTimeArr: null,
+            //搜索表单
+            searchForm: {
+                batchId: null,
+                productId: null,
+                productName: null,
+                goodsId: null,
+                goodsName: null,
+                batchStatus: null,
+                createBefore: null,
+                createAfter: null,
+                pageSize: 10,
+                currentPage:1
+            },
+            //多选值
+            multipleSelection: [],
+            //当前页
+            currentPage: 1,
+            //分页大小
+            pageSize: 10,
+            //总记录数
+            totalCount: 0,
+            editFormRules: {
+                productId: [
+                    { required: true, message: '请输入姓名', trigger: 'blur' }
+                ]
+            },
+            //编辑界面数据
+            editForm: {
+                batchId: null,
+                productId: null,
+                productName: null,
+                goodsId: null,
+                goodsName: null,
+                batchStatus: null,
+                visitDate: null,
+                tradePrice: null,
+                quantity: null,
+                payType: null,
+                runStatus: null,
+                runInfo: null,
+                createTime: null,
+                modifyTime: null
+            },
+            batchStatus:[{
+                key:"Created",
+                name:"导入数据"
+            },{
+                key:"Import",
+                name:"数据确认"
+            },{
+                key:"Queue",
+                name:"排队中"
+            },{
+                key:"Running",
+                name:"进行中"
+            },{
+                key:"Abort",
+                name:"已废弃"
+            },{
+                key:"Suspend",
+                name:"已暂停"
+            },{
+                key:"Finish",
+                name:"已完成"
+            }],
+            //列表数据
+            tableData: null,
+            statusMap: null,
+            //编辑界面是否显示
+            dialogVisible: false,
+            dialogTitle: '',
+        },
+        methods:{
+            //表格查询事件
+            searchClick:function() {
+                var self = this;
+                self.searchForm.pageSize = this.pageSize;
+                self.searchForm.currentPage = this.currentPage;
+                axios({
+                        method: 'post',
+                        url:'/data',
+                        data: self.searchForm,
+                    }).then(function (response) {
+                        self.tableData = response.data;
+                        self.totalCount = 53;
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            //分页大小修改事件
+            pageSizeChange:function(val) {
+                this.pageSize = val;
+                var _self = this;
+                _self.searchClick();//重新加载数据
+            },
+            //当前页修改事件
+            currentPageChange:function(val) {
+                this.currentPage = val;
+                var _self = this;
+                _self.searchClick();//重新加载数据
+            },
+            handleClose: function () {
+              this.dialogVisible = false;
+            },
+            //新建事件
+            addClick:function() {
+                this.dialogTitle = "新增";
+                this.dialogVisible = true;
+            },
+            //表格编辑事件
+            editClick:function(row) {
+                this.dialogTitle = "编译";
+                this.dialogVisible = true;
+                //查询对应的记录赋值
+            },
+
+            //表格勾选事件
+            selectionChange:function(val) {
+                this.multipleSelection = val;
+                console.info(val);
+            },
+            //表格删除事件
+            deleteClick:function(row) {
+                var _self = this;
+                this.$confirm('确认删除' + row.name +'吗?', '提示', {
+                    type: 'warning'
+                }).then(function(){
+                    _self.$message({
+                        message: row.name + '删除成功',
+                        type: 'success'
+                    });
+                    _self.searchClick();//重新加载数据
+                }).catch(function(e){
+                    if(e != "cancel")
+                        console.log("出现错误：" + e);
+                });
+            },
+
+
+            //删除所选，批量删除
+            removeSelection:function() {
+                var _self = this;
+                var multipleSelection = this.multipleSelection;
+                if(multipleSelection.length < 1) {
+                    _self.$message({
+                        message: '请至少选中一条记录',
+                        type: 'error'
+                    });
+                    return;
+                }
+                var ids = "";
+                for(var i=0;i<multipleSelection.length;i++) {
+                    var row = multipleSelection[i];
+                    ids += row.name + ","
+                }
+                this.$confirm('确认删除' + ids +'吗?', '提示', {
+                    type: 'warning'
+                }).then(function(){
+                    _self.$message({
+                        message: ids + '删除成功',
+                        type: 'success'
+                    });
+                    _self.loadingData();//重新加载数据
+                }).catch(function(e){
+                    if(e != "cancel")
+                        console.log("出现错误：" + e);
+                });
+            },
+            //保存点击事件
+            editSubmit:function(){
+                console.info(this.editForm);
+                //保存数据操作
+                this.dialogVisible = false;
+            }
+        },
+        filters: {
+            formatDate: function(value){
+                return new Date(value).Format("yyyy-MM-dd");;
+            },
+            formatTime: function (cellValue) {
+                return new Date(cellValue).Format("yyyy-MM-dd hh:mm:ss");
+            },
+            formatRunStatus: function (cellValue) {
+                const statusMap = {
+                    "Created":"导入数据",
+                    "Import":"数据确认",
+                    "Queue":"排队中",
+                    "Running":"进行中",
+                    "Abort":"已废弃",
+                    "Suspend":"已暂停",
+                    "Finish":"已完成"
+                };
+                return statusMap[cellValue];
+            }
+        }
+    })
+</script>
+ 
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Vue+ElementUI使用demo</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../webjars/element-ui/index.css">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <div id="app" class="wrapper">
+        <naver></naver>
+    </div>
+
+
+    <!-- 先引入 Vue -->
+    <script src="../webjars/vue/vue.min.js"></script>
+    <!-- 引入组件库 -->
+    <script src="../webjars/element-ui/index.js"></script>
+    <script src="../webjars/axios/axios.min.js"></script>
+    <script src="../webjars/tool/index.js"></script>
+    <script src="/scripts/nav.js"></script>
+    <script>
+        var vue = new Vue({
+            el: "#app",
+            data: {}
+        });
+    </script>
+
+</body>
+</html>
