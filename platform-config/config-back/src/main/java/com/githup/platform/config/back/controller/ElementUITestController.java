@@ -1,8 +1,8 @@
-package com.github.platform.back.controller;
+package com.githup.platform.config.back.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.platform.back.vo.SearchVO;
+import com.githup.platform.config.back.domain.vo.SearchVO;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

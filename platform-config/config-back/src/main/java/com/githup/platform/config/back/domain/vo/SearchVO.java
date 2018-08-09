@@ -1,4 +1,4 @@
-package com.github.platform.back.vo;
+package com.githup.platform.config.back.domain.vo;
 
 import java.io.Serializable;
 import java.util.Date;

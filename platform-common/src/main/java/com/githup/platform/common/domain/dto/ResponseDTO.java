@@ -7,6 +7,7 @@ public class ResponseDTO<T> {
     private Boolean success;
     private String code;
     private String message;
+    private Long totalCount;
     private T result;
 
     public ResponseDTO() {
@@ -16,6 +17,14 @@ public class ResponseDTO<T> {
         this.success = success;
         this.code = code;
         this.message = message;
+    }
+
+    public Long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Long totalCount) {
+        this.totalCount = totalCount;
     }
 
     public Boolean getSuccess() {

@@ -6,12 +6,9 @@
     <title>Vue+ElementUI使用demo</title>
     <!-- 引入样式 -->
 	<link rel="stylesheet" href="../webjars/element-ui/index.css">
-    <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
-<div id="tableView" class="wrapper">
-    <naver></naver>
-    <div style="width: 80%;float: right;margin-top: 20px;">
+<div id="tableView">
         <!--列表顶部搜索和工具条-->
         <el-row>
             <el-form :inline="true" size="small" :model="searchForm" class="demo-form-inline">
@@ -100,7 +97,7 @@
                         {{scope.row.visitDate | formatDate}}
                     </template>
                 </el-table-column>
-                <el-table-column
+               <!-- <el-table-column
                         prop="tradePrice"
                         label="商品价格"
                         width="120">
@@ -131,7 +128,7 @@
                     <template slot-scope="scope">
                         {{scope.row.createTime | formatTime}}
                     </template>
-                </el-table-column>
+                </el-table-column>-->
                 <el-table-column
                         prop="modifyTime"
                         label="批次完成时间"
@@ -190,22 +187,23 @@
                 <el-button type="primary" @click.native="editSubmit">提交</el-button>
             </div>
         </el-dialog>
-    </div>
- 
+
 </div>
- 
- <!-- 先引入 Vue -->
-  <script src="../webjars/vue/vue.min.js"></script>
-  <!-- 引入组件库 -->
-  <script src="../webjars/element-ui/index.js"></script>
-  <script src="../webjars/axios/axios.min.js"></script>
-  <script src="../webjars/tool/index.js"></script>
-<script src="/scripts/nav.js"></script>
+
+<!-- 先引入 Vue -->
+<script src="../webjars/vue/vue.min.js"></script>
+<!-- 引入组件库 -->
+<script src="../webjars/element-ui/index.js"></script>
+<script src="../webjars/axios/axios.min.js"></script>
+<script src="../webjars/tool/index.js"></script>
+<script src="../webjars/components/headbar.js"></script>
+<script src="../webjars/components/sidebar.js"></script>
  
 <script type="text/javascript">
     var tableView = new Vue({
         el: '#tableView',
         data: {
+            userName:'admin',
             //显示加载中样式
             loading: false,
             createTimeArr: null,
