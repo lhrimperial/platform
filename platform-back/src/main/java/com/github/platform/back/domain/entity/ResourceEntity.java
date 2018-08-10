@@ -1,13 +1,18 @@
-package com.github.platform.back.domain.po;
+package com.github.platform.back.domain.entity;
 
-
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
  */
-public class ResourcePO extends BasePO {
+@Entity
+@Table(name = "t_resource")
+public class ResourceEntity extends BaseEntity {
     private static final long serialVersionUID = -325754276851615269L;
 
     private String resCode;
@@ -18,8 +23,16 @@ public class ResourcePO extends BasePO {
     private String icon;
     private Integer level;
     private Integer type;
-    private ResourcePO parentResource;
-    private List<ResourcePO> children = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "resourcePOS", fetch = FetchType.EAGER)
+    private Set<RoleEntity> rolePOS = new HashSet<>();
+
+    @ManyToOne(fetch=FetchType.EAGER)
+    @JoinColumn(name="parentCode", referencedColumnName="resCode", insertable = false, updatable = false)
+    private ResourceEntity parentResource;
+
+    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER, mappedBy="parentResource")
+    private List<ResourceEntity> children = new ArrayList<>();
 
     public String getResCode() {
         return resCode;
@@ -85,19 +98,27 @@ public class ResourcePO extends BasePO {
         this.type = type;
     }
 
-    public ResourcePO getParentResource() {
+    public Set<RoleEntity> getRolePOS() {
+        return rolePOS;
+    }
+
+    public void setRolePOS(Set<RoleEntity> rolePOS) {
+        this.rolePOS = rolePOS;
+    }
+
+    public ResourceEntity getParentResource() {
         return parentResource;
     }
 
-    public void setParentResource(ResourcePO parentResource) {
+    public void setParentResource(ResourceEntity parentResource) {
         this.parentResource = parentResource;
     }
 
-    public List<ResourcePO> getChildren() {
+    public List<ResourceEntity> getChildren() {
         return children;
     }
 
-    public void setChildren(List<ResourcePO> children) {
+    public void setChildren(List<ResourceEntity> children) {
         this.children = children;
     }
 }

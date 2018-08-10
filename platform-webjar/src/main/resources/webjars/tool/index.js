@@ -1,3 +1,11 @@
+axios.interceptors.request.use(function (config) {
+    config.headers.Authorization = localStorage.Authorization;
+    return config;
+}, function (error) {
+    return Promise.reject(error);
+});
+
+
 Date.prototype.Format = function (fmt) { //author: meizz
     var o = {
         "M+": this.getMonth() + 1, //月份

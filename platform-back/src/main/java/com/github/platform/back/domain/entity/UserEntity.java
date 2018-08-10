@@ -1,12 +1,15 @@
-package com.github.platform.back.domain.po;
+package com.github.platform.back.domain.entity;
 
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  *
  */
-public class UserPO extends BasePO {
+@Entity
+@Table(name = "t_user")
+public class UserEntity extends BaseEntity {
     private static final long serialVersionUID = 891593461019475211L;
 
     private String userName;
@@ -15,10 +18,19 @@ public class UserPO extends BasePO {
     private String nickName;
     private String phone;
     private String email;
-    private Set<String> roleCodes = new HashSet<>();
 
-    public String getCredentialsSalt() {
-        return userName;
+    @JoinTable(name = "t_user_role",
+        joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+        inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")})
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<RoleEntity> rolePOS = new HashSet<>();
+
+    public Set<RoleEntity> getRolePOS() {
+        return rolePOS;
+    }
+
+    public void setRolePOS(Set<RoleEntity> rolePOS) {
+        this.rolePOS = rolePOS;
     }
 
     public String getUserName() {
@@ -67,13 +79,5 @@ public class UserPO extends BasePO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public Set<String> getRoleCodes() {
-        return roleCodes;
-    }
-
-    public void setRoleCodes(Set<String> roleCodes) {
-        this.roleCodes = roleCodes;
     }
 }

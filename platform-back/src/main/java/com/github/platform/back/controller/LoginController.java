@@ -2,10 +2,21 @@ package com.github.platform.back.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.github.platform.back.domain.dto.UserDTO;
 import com.githup.platform.common.controller.AbstractController;
 import com.githup.platform.common.domain.dto.ResponseDTO;
+import org.apache.commons.collections.map.HashedMap;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 /**
  *
@@ -13,10 +24,42 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class LoginController extends AbstractController{
 
-    @RequestMapping("/login")
-    public ResponseDTO login(String userName, String password) {
+    private Logger logger = LoggerFactory.getLogger(LoginController.class);
 
-        return returnSuccess();
+    @RequestMapping("/asyncLogin")
+    public ResponseDTO asyncLogin(@RequestBody UserDTO userDTO, HttpSession session) {
+        ResponseDTO responseDTO = null;
+        UsernamePasswordToken token = new UsernamePasswordToken(userDTO.getUserName(), userDTO.getPassword());
+        Subject subject = SecurityUtils.getSubject();
+        try {
+            subject.login(token);
+
+            Map<String, Object> resultMap = new HashedMap();
+            resultMap.put("Authorization", session.getId());
+            responseDTO = returnSuccess();
+            responseDTO.setResult(resultMap);
+            return responseDTO;
+        } catch (IncorrectCredentialsException e) {
+            //密码错误
+            logger.error("用户名/密码错误", e);
+            responseDTO = returnError("用户名/密码错误");
+        } catch (LockedAccountException e) {
+            //该用户已被冻结
+            logger.error("该用户已被冻结", e);
+            responseDTO = returnError("该用户已被冻结");
+        } catch (ExcessiveAttemptsException e){
+            //尝试次数过多
+            logger.error("尝试次数过多", e);
+            responseDTO = returnError("尝试次数过多");
+        } catch (AuthenticationException e) {
+            //该用户不存在
+            logger.error("该用户不存在", e);
+            responseDTO = returnError("该用户不存在");
+        } catch (Exception e) {
+            logger.error("", e);
+            responseDTO = returnError();
+        }
+        return responseDTO;
     }
 
     @RequestMapping("/menus")
@@ -27,8 +70,10 @@ public class LoginController extends AbstractController{
         return responseDTO;
     }
 
+
+
     String data = "[{\n" +
-            "                icon: 'el-icon-menu',\n" +
+            "                icon: 'el-icon-document',\n" +
             "                index: '2',\n" +
             "                title: '基础数据',\n" +
             "                subs: [\n" +
@@ -40,7 +85,7 @@ public class LoginController extends AbstractController{
             "                ]\n" +
             "            },\n" +
             "            {\n" +
-            "                icon: 'el-icon-date',\n" +
+            "                icon: 'el-icon-setting',\n" +
             "                index: '3',\n" +
             "                title: '系统设置',\n" +
             "                subs: [\n" +

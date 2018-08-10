@@ -16,9 +16,21 @@
 
     <properties>
         <java.version>1.7</java.version>
+        <shiro.version>1.4.0</shiro.version>
+        <shiro-redis.version>2.4.2.1-RELEASE</shiro-redis.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-spring</artifactId>
+            <version>${shiro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.crazycake</groupId>
+            <artifactId>shiro-redis</artifactId>
+            <version>${shiro-redis.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.github.framework</groupId>
             <artifactId>framework-starter-web</artifactId>
@@ -36,6 +48,10 @@
         <dependency>
             <groupId>com.github.framework</groupId>
             <artifactId>framework-starter-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.framework</groupId>
+            <artifactId>framework-starter-mybatis</artifactId>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

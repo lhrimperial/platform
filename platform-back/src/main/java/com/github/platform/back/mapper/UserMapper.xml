@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.platform.back.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.github.platform.back.domain.po.UserPO">
+        <result column="id" property="id"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="nick_name" property="nickName"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="notes" property="notes"/>
+        <result column="active" property="active"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modify_time" property="modifyTime"/>
+    </resultMap>
+
+    <resultMap id="WithRoleResultMap" type="com.github.platform.back.domain.po.UserPO" extends="BaseResultMap">
+        <collection property="roleCodes" column="role_code" ofType="java.lang.String">
+            <result column="role_code" />
+        </collection>
+    </resultMap>
+
+    <sql id="column_sql">
+        u.id,u.user_name,u.password,u.salt,u.nick_name,u.phone,u.email,u.notes,u.active,u.create_time,u.modify_time
+    </sql>
+
+    <sql id="param_sql">
+        <if test="userName != null and userName != ''">
+            and u.user_name = #{userName}
+        </if>
+        <if test="password != null and password != ''">
+            and u.password = #{password}
+        </if>
+        <if test="salt != null and salt != ''">
+            and u.salt = #{salt}
+        </if>
+        <if test="nickName != null and nickName != ''">
+            and u.nick_name like concat('%',concat(#{nickName},'%'))
+        </if>
+        <if test="phone != null and phone != ''">
+            and u.phone = #{phone}
+        </if>
+        <if test="email != null and email != ''">
+            and u.email = #{email}
+        </if>
+        <if test="active != null and active != ''">
+            and u.active = #{active}
+        </if>
+    </sql>
+
+    <select id="findByUserName" parameterType="java.lang.String" resultMap="WithRoleResultMap">
+        select <include refid="column_sql"/>
+        ,r.role_code
+        from t_user u
+        left join t_user_role ur on u.id = ur.user_id
+        left join t_role r on ur.role_id = r.id
+        where  u.user_name = #{userName}
+    </select>
+
+    <select id="findById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select <include refid="column_sql"/>
+        from t_user u
+        where id = #{id}
+    </select>
+
+    <select id="findByParams" resultMap="BaseResultMap" parameterType="com.github.platform.back.domain.po.UserPO">
+        select <include refid="column_sql"/>
+        from t_user u
+        <where>
+            <include refid="param_sql"/>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.github.platform.back.domain.po.UserPO">
+        insert into t_user(user_name,password,salt,nick_name,phone,email,notes,active,create_time,modify_time)
+        values (#{userName},#{password},#{salt},#{nickName},#{phone},#{email},#{notes},#{active},#{createTime},#{modifyTime})
+    </insert>
+
+    <update id="update" parameterType="com.github.platform.back.domain.po.UserPO">
+        update t_user
+        <set>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="salt != null and salt != ''">
+                salt = #{salt},
+            </if>
+            <if test="nickName != null and nickName != ''">
+                nick_name = #{nickName},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="active != null and active != ''">
+                active = #{active},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </if>
+        </where>
+    </update>
+</mapper>
