@@ -2,19 +2,18 @@ package com.github.platform.back.configure.shrio;
 
 import com.github.platform.back.domain.po.UserPO;
 import com.github.platform.back.service.IUserService;
+import com.githup.platform.common.constant.GlobalConstant;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpSession;
 
 
 /**
@@ -66,9 +65,12 @@ public class CertificationAndAuthorizationRealm extends AuthorizingRealm {
                 ByteSource.Util.bytes(userPO.getCredentialsSalt()),
                 getName()  //realm name
         );
-        Subject subject = SecurityUtils.getSubject();
-        HttpSession session = (HttpSession)subject.getSession();
-        session.setAttribute("currentUser", userPO);
+
+        Session session = SecurityUtils.getSubject().getSession();
+        Object sessionUser = session.getAttribute(GlobalConstant.SESSION_AUTH_LOGIN_USERNAME);
+        if (sessionUser == null) {
+            session.setAttribute(GlobalConstant.SESSION_AUTH_LOGIN_USERNAME,userPO);
+        }
         return authenticationInfo;
     }
 

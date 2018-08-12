@@ -1,16 +1,11 @@
-package com.github.platform.back.configure;
+package com.githup.platform.config.back.configure;
 
-
-import com.githup.platform.common.constant.GlobalConstant;
-import org.apache.shiro.web.util.WebUtils;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  *
@@ -32,20 +27,9 @@ public class AccessFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
-        if (!StringUtils.isEmpty(uri)) {
-            String s = uri.substring(uri.lastIndexOf("/")+1);
-            if (!Arrays.asList(filterUri).contains(s)) {
-                HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
-                HttpSession session = httpServletRequest.getSession();
-                Object sessionUser = session.getAttribute(GlobalConstant.SESSION_AUTH_LOGIN_USERNAME);
-
-
-                if (sessionUser == null) {
-                    resp.sendRedirect(LOGIN_PAGE);
-                    return;
-                }
-            }
-        }
+        System.out.println(uri);
+        HttpSession session = req.getSession();
+        System.out.println(session.getId());
 
         chain.doFilter(request, response);
     }

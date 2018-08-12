@@ -1,5 +1,7 @@
 package com.github.platform.back.configure.shrio;
 
+import com.alibaba.fastjson.JSON;
+import com.githup.platform.common.domain.dto.ResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,7 +11,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  *
@@ -25,8 +26,8 @@ public class GlobalExceptionHandler implements HandlerExceptionResolver {
         response.setCharacterEncoding("UTF-8"); //避免乱码
         response.setHeader("Cache-Control", "no-cache, must-revalidate");
         try {
-//            ResponseVO responseVO = new ResponseVO(false, "", ex.getMessage());
-//            response.getWriter().write(JSON.toJSONString(responseVO));
+            ResponseDTO responseVO = new ResponseDTO(false, "", ex.getMessage());
+            response.getWriter().write(JSON.toJSONString(responseVO));
         } catch (Exception e) {
             logger.error("与客户端通讯异常:"+ e.getMessage(), e);
         }

@@ -70,6 +70,11 @@ public class LoginController extends AbstractController{
         return responseDTO;
     }
 
+    @RequestMapping("/logout")
+    public ResponseDTO logout() {
+        return returnSuccess();
+    }
+
 
 
     String data = "[{\n" +

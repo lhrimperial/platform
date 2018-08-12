@@ -6,7 +6,7 @@ Vue.component('headbar', {
     "            <div class=\"user-info\">\n" +
     "                <el-dropdown trigger=\"click\" @command=\"handleCommand\">\n" +
     "                    <span class=\"el-dropdown-link\">\n" +
-    "                       <img src=\"../images/loginOut.png\" alt=\"\" width=\"25\">\n" +
+    "                       <img src=\"/platform/images/loginOut.png\" alt=\"\" width=\"25\">\n" +
     "                    </span>\n" +
     "                    <el-dropdown-menu slot=\"dropdown\" placement=\"top-end\">\n" +
     "                        <el-dropdown-item command=\"logout\">退出</el-dropdown-item>\n" +
@@ -20,7 +20,14 @@ Vue.component('headbar', {
     props: ['userInfo'],
     methods: {
         handleCommand(command){
-            this.$message(command);
+            if (command == 'logout'){
+                axios.get("logout").then(function (response) {
+                    window.location.href = "login.html";
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            }
+
         },
         autoTime(){
             var timeEle=document.querySelector('.headerTimer');

@@ -1,7 +1,6 @@
-package com.github.platform.back.configure;
+package com.githup.platform.config.back.configure;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -10,14 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class WebConfiguration {
 
-    @Bean
-    public FilterRegistrationBean crosFilter() {
-        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-        filterRegistrationBean.setName("crosFilter");
-        filterRegistrationBean.setFilter(new CrosAuthenticationFilter());
-        filterRegistrationBean.addUrlPatterns("/*");
-        return filterRegistrationBean;
-    }
 
 
 //    @Bean
