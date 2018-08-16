@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>平台管理系统</title>
+    <!-- 引入样式 -->
+    <link type="text/css" rel="stylesheet" href="webjars/element-ui/index.css"/>
+</head>
+<body>
+<div id="zk_config">
+    <div class="form-box">
+        <el-form :inline="true" :model="searchForm" class="demo-form-inline" size="mini">
+            <el-form-item label="环境">
+                <el-select
+                        ref="envSelectRef"
+                        v-model="searchForm.environmentCode"
+                        filterable
+                        remote
+                        clearable
+                        reserve-keyword
+                        placeholder="请输入关键词"
+                        :remote-method="remoteMethodEnv"
+                        :loading="loading">
+                    <el-option
+                            v-for="item in environments"
+                            :key="item.environmentCode"
+                            :label="item.environmentName"
+                            :value="item.environmentCode">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="onAddEnv" >环境管理</el-button>
+            </el-form-item>
+            <br/>
+            <el-form-item label="应用">
+                <el-select
+                        v-model="searchForm.applicationCode"
+                        @focus="checkEnv"
+                        filterable
+                        remote
+                        clearable
+                        reserve-keyword
+                        placeholder="请输入关键词"
+                        :remote-method="remoteMethodApp"
+                        :loading="loading">
+                    <el-option
+                            v-for="item in applications"
+                            :key="item.applicationCode"
+                            :label="item.applicationName"
+                            :value="item.applicationCode">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item >
+                <el-button type="primary" @click="onSearch" >查询配置</el-button>
+                <el-button type="primary" @click="onAddApp" >应用管理</el-button>
+                <el-button type="primary" @click="onAddPro" >新增属性</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+
+    <!--环境管理-->
+    <div>
+        <el-dialog
+                title="环境管理"
+                :visible.sync="envVisible"
+                width="80%"
+                center>
+            <el-row>
+                <el-form :inline="true" size="small" :model="evnSearchForm" class="demo-form-inline">
+                    <el-form-item label="环境编码">
+                        <el-input v-model="evnSearchForm.environmentCode" placeholder="环境编码"></el-input>
+                    </el-form-item>
+                    <el-form-item label="环境名称">
+                        <el-input v-model="evnSearchForm.environmentName" placeholder="环境名称"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="search" v-on:click="envSearch" >查询</el-button>
+                        <el-button type="primary" icon="search" v-on:click="envAdd" >新增</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-row>
+            <div>
+                <!--列表-->
+                <el-row>
+                    <el-table
+                            :data="tableDataEnv"
+                            style="width: 100%"
+                            border="true">
+                        <el-table-column
+                                prop="id"
+                                label="ID"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="environmentCode"
+                                label="环境编码"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="environmentName"
+                                label="环境名称"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="创建时间"
+                                :formatter="formatDate"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="modifyTime"
+                                label="修改时间"
+                                :formatter="formatDate"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="200"
+                        >
+                            <template scope="scope">
+                                <el-button :plain="true" type="success" size="small" v-on:click="editClickEnv(scope.row)">修改</el-button>
+                                <el-button :plain="true" type="danger" size="small" v-on:click="deleteClickEnv(scope.row)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-row>
+                <!--列表底部工具条和分页符-->
+                <el-row style="margin-top: 20px" type="flex" justify="end">
+                    <el-col :span="18" >
+                        <el-pagination
+                                v-on:size-change="pageSizeChangeEnv"
+                                v-on:current-change="currentPageChangeEnv"
+                                :current-page="currentPageEnv"
+                                :page-sizes="[10, 20, 30, 50]"
+                                :page-size="pageSizeEnv"
+                                layout="total, sizes, prev, pager, next, jumper"
+                                :total="totalCountEnv">
+                        </el-pagination>
+                    </el-col>
+                </el-row>
+            </div>
+
+            <div>
+                <el-dialog
+                        width="30%"
+                        :title="envTitle"
+                        :visible.sync="innerEnvVisible"
+                        center
+                        append-to-body>
+                    <el-form ref="envForm" :model="envForm" label-width="120px">
+                        <el-form-item label="环境编码">
+                            <el-input v-model="envForm.environmentCode"></el-input>
+                        </el-form-item>
+                        <el-form-item label="环境名称">
+                            <el-input v-model="envForm.environmentName"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="saveOrUpdateEnv">保 存</el-button>
+                            <el-button @click="innerEnvVisible = false">取 消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+            </div>
+        </el-dialog>
+    </div>
+
+
+    <!--环境管理-->
+    <div>
+        <el-dialog
+                title="应用管理"
+                :visible.sync="appVisible"
+                width="80%"
+                center>
+            <el-row>
+                <el-form :inline="true" size="small" :model="appSearchForm" class="demo-form-inline">
+                    <el-form-item label="APP编码">
+                        <el-input v-model="appSearchForm.applicationCode" placeholder="APP编码"></el-input>
+                    </el-form-item>
+                    <el-form-item label="APP名称">
+                        <el-input v-model="appSearchForm.applicationName" placeholder="APP名称"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="search" v-on:click="appSearch" >查询</el-button>
+                        <el-button type="primary" icon="search" v-on:click="appAdd" >新增</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-row>
+            <div>
+                <!--列表-->
+                <el-row>
+                    <el-table
+                            :data="tableDataApp"
+                            style="width: 100%"
+                            border="true">
+                        <el-table-column
+                                prop="id"
+                                label="ID"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="environmentCode"
+                                label="环境编码"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="applicationCode"
+                                label="APP编码"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="applicationName"
+                                label="APP名称"
+                                width="120">
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="创建时间"
+                                :formatter="formatDate"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="modifyTime"
+                                label="修改时间"
+                                :formatter="formatDate"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="200"
+                        >
+                            <template scope="scope">
+                                <el-button :plain="true" type="success" size="small" v-on:click="editClickApp(scope.row)">修改</el-button>
+                                <el-button :plain="true" type="danger" size="small" v-on:click="deleteClickApp(scope.row)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-row>
+                <!--列表底部工具条和分页符-->
+                <el-row style="margin-top: 20px" type="flex" justify="end">
+                    <el-col :span="18" >
+                        <el-pagination
+                                v-on:size-change="pageSizeChangeApp"
+                                v-on:current-change="currentPageChangeApp"
+                                :current-page="currentPageApp"
+                                :page-sizes="[10, 20, 30, 50]"
+                                :page-size="pageSizeApp"
+                                layout="total, sizes, prev, pager, next, jumper"
+                                :total="totalCountApp">
+                        </el-pagination>
+                    </el-col>
+                </el-row>
+            </div>
+
+            <div>
+                <el-dialog
+                        width="30%"
+                        :title="appTitle"
+                        :visible.sync="innerAppVisible"
+                        center
+                        append-to-body>
+                    <el-form ref="appForm" :model="appForm" label-width="120px">
+                        <el-form-item label="APP编码">
+                            <el-input v-model="appForm.applicationCode"></el-input>
+                        </el-form-item>
+                        <el-form-item label="APP名称">
+                            <el-input v-model="appForm.applicationName"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="saveOrUpdateApp">保 存</el-button>
+                            <el-button @click="closeAppDialog">取 消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+            </div>
+        </el-dialog>
+    </div>
+
+</div>
+
+<!-- 先引入 Vue -->
+<script src="webjars/vue/vue.min.js"></script>
+<!-- 引入组件库 -->
+<script src="webjars/element-ui/index.js"></script>
+<script src="webjars/axios/axios.min.js"></script>
+<script src="webjars/tool/index.js?version=20180816"></script>
+<script src="webjars/components/headbar.js"></script>
+<script src="webjars/components/sidebar.js"></script>
+<script>
+    var vue = new Vue({
+        el: "#zk_config",
+        data: {
+            searchForm: {
+                environmentCode: '',
+                applicationCode: ''
+            },
+            loading: false,
+            environments:[],
+            applications:[],
+
+            //环境管理
+            envVisible: false,
+            evnSearchForm: {
+                environmentCode: '',
+                environmentName: ''
+            },
+            tableDataEnv: [],
+            currentPageEnv: 0,
+            pageSizeEnv: 10,
+            totalCountEnv: 0,
+            envTitle: '',
+            innerEnvVisible: false,
+            envForm: {
+                id: null,
+                environmentCode: '',
+                environmentName: '',
+                active: null,
+                createTime: null,
+                modifyTime: null
+            },
+            //APP管理
+            appVisible: false,
+            appSearchForm: {
+                applicationCode: '',
+                applicationName: ''
+            },
+            tableDataApp: [],
+            currentPageApp: 0,
+            pageSizeApp: 10,
+            totalCountApp: 0,
+            appTitle: '',
+            innerAppVisible: false,
+            appForm: {
+                id: null,
+                environmentCode: '',
+                applicationCode: '',
+                applicationName: '',
+                active: null,
+                createTime: null,
+                modifyTime: null
+            }
+        },
+        methods: {
+            //应用管理
+            closeAppDialog: function () {
+                this.tableDataApp = [];
+                this.innerAppVisible = false;
+            },
+            appSearch: function(){
+                var self = this;
+                this.appSearchForm.environmentCode = this.searchForm.environmentCode;
+                var requestDTO = {
+                    request: this.appSearchForm,
+                    pageNo: this.currentPageApp,
+                    pageSize: this.pageSizeApp
+                }
+                axios.post("/config-back/zookeeper/findAppByPage", requestDTO).then(function (response) {
+                    if (response.data.success) {
+                        self.tableDataApp = response.data.result;
+                        self.totalCountApp = response.data.totalCount;
+                    } else {
+                        self.$message({
+                            type: 'warning',
+                            message: '失败!'
+                        });
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            appAdd: function(){
+                this.clearAppEntity();
+                this.appTitle = '新增环境';
+                this.innerAppVisible = true;
+            },
+            editClickApp: function(appEntity){
+                this.appTitle = '新增应用';
+                this.appForm = appEntity;
+                this.innerAppVisible = true;
+            },
+            saveOrUpdateApp: function(){
+                var self = this;
+                this.appForm.environmentCode = this.searchForm.environmentCode;
+                axios.post("/config-back/zookeeper/saveOrUpdateApp", {request:this.appForm}).then(function (response) {
+                    if (response.data.success) {
+                        self.$message({
+                            type: 'success',
+                            message: '保存成功!'
+                        });
+                    } else {
+                        self.$message({
+                            type: 'warning',
+                            message: '保存失败!'
+                        });
+                    }
+                    self.innerAppVisible = false;
+                    self.appSearch();
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            },
+            clearAppEntity: function(){
+                this.appForm.id = null;
+                this.appForm.environmentCode = '';
+                this.appForm.applicationCode = '';
+                this.appForm.applicationName = '';
+                this.appForm.active = null;
+                this.appForm.createTime = null;
+                this.appForm.modifyTime = null;
+            },
+            deleteClickApp: function(appEntity){
+                var self = this;
+                self.$confirm('是否确认删除本条数据', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    var url = "/config-back/zookeeper/deleteApp";
+                    axios.get(url, {
+                        params: {
+                            envId: appEntity.id
+                        }
+                    }).then(function (response) {
+                        if (response.data.success) {
+                            self.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        } else {
+                            self.$message({
+                                type: 'warning',
+                                message: '删除失败!'
+                            });
+                        }
+                        self.appSearch();
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(function () {
+                    self.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            pageSizeChangeApp: function(value){
+                this.pageSizeApp = value;
+                this.appSearch();
+            },
+            currentPageChangeApp: function(value){
+                this.currentPageApp = value;
+                this.appSearch();
+            },
+            //环境管理
+            envSearch: function(){
+                var self = this;
+                var requestDTO = {
+                    request: this.evnSearchForm,
+                    pageNo: this.currentPageEnv,
+                    pageSize: this.pageSizeEnv
+                }
+                axios.post("/config-back/zookeeper/findEnvByPage", requestDTO).then(function (response) {
+                   if (response.data.success) {
+                        self.tableDataEnv = response.data.result;
+                        self.totalCountEnv = response.data.totalCount;
+                   } else {
+                       self.$message({
+                           type: 'warning',
+                           message: '失败!'
+                       });
+                   }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            envAdd: function(){
+                this.clearEnvEntity();
+                this.envTitle = '新增环境';
+                this.innerEnvVisible = true;
+            },
+            editClickEnv: function(envEntity){
+                this.envTitle = '新增环境';
+                this.envForm = envEntity;
+                this.innerEnvVisible = true;
+            },
+            saveOrUpdateEnv: function(){
+                var self = this;
+                axios.post("/config-back/zookeeper/saveOrUpdateEnv", {request:this.envForm}).then(function (response) {
+                    if (response.data.success) {
+                        self.$message({
+                            type: 'success',
+                            message: '保存成功!'
+                        });
+                    } else {
+                        self.$message({
+                            type: 'warning',
+                            message: '保存失败!'
+                        });
+                    }
+                    self.innerEnvVisible = false;
+                    self.envSearch();
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            },
+            clearEnvEntity: function(){
+                this.envForm.id = null;
+                this.envForm.environmentCode = '';
+                this.envForm.environmentName = '';
+                this.envForm.active = null;
+                this.envForm.createTime = null;
+                this.envForm.modifyTime = null;
+            },
+            deleteClickEnv: function(envEntity){
+                var self = this;
+                self.$confirm('是否确认删除本条数据', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    var url = "/config-back/zookeeper/deleteEnv";
+                    axios.get(url, {
+                        params: {
+                            envId: envEntity.id
+                        }
+                    }).then(function (response) {
+                        if (response.data.success) {
+                            self.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        } else {
+                            self.$message({
+                                type: 'warning',
+                                message: '删除失败!'
+                            });
+                        }
+                        self.envSearch();
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(function () {
+                    self.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            pageSizeChangeEnv: function(value){
+                this.pageSizeEnv = value;
+                this.envSearch();
+            },
+            currentPageChangeEnv: function(value){
+                this.currentPageEnv = value;
+                this.envSearch();
+            },
+            //配置列表
+            onSearch: function () {
+                
+            },
+            onAddEnv: function () {
+                this.envVisible = true;
+                this.envSearch();
+            },
+            onAddApp: function () {
+                if (this.checkEnv()) {
+                    this.appVisible = true;
+                    this.appSearch();
+                }
+            },
+            onAddPro: function () {
+                
+            },
+            remoteMethodEnv: function (query) {
+                var self = this;
+                self.loading = true;
+                axios.get("/config-back/zookeeper/remoteMethodEnv",{params:{environmentName:query}}).then(function (response) {
+                    if (response.data.success) {
+                        self.environments = response.data.result;
+                    } else {
+                        self.$message.error(response.data.message);
+                    }
+                    self.loading = false;
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            checkEnv: function(){
+                if (tools.isEmpty(this.searchForm.environmentCode)) {
+                    this.$message.info("请选择环境");
+                    this.$refs.envSelectRef.focus();
+                    return false;
+                }
+                return true;
+            },
+            remoteMethodApp: function (query) {
+                var self = this;
+                self.loading = true;
+
+                axios.get("/config-back/zookeeper/remoteMethodApp",{params:{
+                    environmentCode:this.searchForm.environmentCode,
+                    applicationName:query}
+                }).then(function (response) {
+                    if (response.data.success) {
+                        self.applications = response.data.result;
+                    } else {
+                        self.$message.error(response.data.message);
+                    }
+                    self.loading = false;
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            },
+            formatDate: function(row, column, cellValue, index) {
+                var d = new Date(cellValue);
+                var year = d.getFullYear();
+                var month = d.getMonth() + 1;
+                var day = d.getDate() <10 ? '0' + d.getDate() : '' + d.getDate();
+                var hour = d.getHours();
+                var minutes = d.getMinutes();
+                var seconds = d.getSeconds();
+                return  year+ '-' + month + '-' + day + ' ' + hour + ':' + minutes + ':' + seconds;
+            }
+        },
+        mounted: function () {
+            this.remoteMethodEnv("");
+        }
+    })
+</script>
+
+</body>
+</html>

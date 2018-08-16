@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello World</h1>
+<div id="app">
+
+</div>
+</body>
+<!-- 先引入 Vue -->
+<script type="text/javascript" src="webjars/vue/vue.min.js"></script>
+<!-- 引入组件库 -->
+<script type="text/javascript" src="webjars/element-ui/index.js"></script>
+<script type="text/javascript" src="webjars/axios/axios.min.js"></script>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+
+        },
+        methods: {
+//            test:function () {
+//                axios.get("menus").then(function (response) {
+//                    console.log(response);
+//                }).catch(function (error) {
+//                    console.log(error);
+//                })
+//            }
+        },
+        mounted: function () {
+//            this.test();
+        }
+    })
+</script>
+</html>

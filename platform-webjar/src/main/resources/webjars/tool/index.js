@@ -5,6 +5,11 @@ axios.interceptors.request.use(function (config) {
     return Promise.reject(error);
 });
 
+var tools = {
+    isEmpty: function (value) {
+        return value == null || value == '' || value == undefined;
+    }
+}
 
 Date.prototype.Format = function (fmt) { //author: meizz
     var o = {

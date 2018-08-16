@@ -66,21 +66,59 @@
             userInfo: {
                 userName: 'longhairen',
             },
-            tabsValue: 'index',
+            tabsValue: 'home',
             tabsArr: [{
                 title: '首页',
-                name: 'index',
-                content: 'index.html'
+                name: 'home',
+                content: 'home.html'
             }],
-            tabsName: ['index'],
-            menus: [],
+            tabsName: ['home'],
+            menus: [{
+                icon: 'el-icon-setting',
+                index: 'sysset',
+                title: '系统设置',
+                subs: [
+                    {
+                        index: 'userManagement',
+                        title: '用户管理',
+                        path: 'http://localhost:9101/config-back/list.html'
+                    },
+                    {
+                        index: 'roleManagement',
+                        title: '角色管理',
+                        path: 'http://localhost:9101/config-back/list.html'
+                    },
+                    {
+                        index: 'resourceManagement',
+                        title: '资源管理',
+                        path: 'http://localhost:9101/config-back/list.html'
+                    }
+                ]
+            },{
+                icon: 'el-icon-tickets',
+                index: 'disconf',
+                title: '统一配置管理',
+                subs: [
+                    {
+                        index: 'zookeeper',
+                        title: 'ZK统一配置',
+                        path: 'http://localhost:9101/config-back/zk_config.html'
+                    },
+                    {
+                        index: 'consul',
+                        title: 'consul注册中心',
+                        path: 'http://localhost:9101/config-back/list.html'
+                    }
+                ]
+            }],
         },
         methods: {
             getMenus: function () {
                 var self = this;
                 axios.get("menus").then(function (response) {
                     if (response.data.success) {
-                        self.menus = response.data.result;
+                       //TODO
+                       //self.menus = response.data.result;
                     }else {
                         this.$message.error(response.data.message);
                     }
